@@ -1,0 +1,744 @@
+---
+title: Visualising Attendence Data as a Dynamic Network
+author: R package build
+date: '2021-09-02'
+slug: visualising-attendence-data-as-a-dynamic-network
+categories:
+  - Network Visualization
+tags:
+  - Dynamic Networks
+  - R
+  - Write-up
+---
+
+<script src="{{< blogdown/postref >}}index.en_files/header-attrs/header-attrs.js"></script>
+<script src="{{< blogdown/postref >}}index.en_files/htmlwidgets/htmlwidgets.js"></script>
+<script src="{{< blogdown/postref >}}index.en_files/jquery/jquery.min.js"></script>
+<script src="{{< blogdown/postref >}}index.en_files/d3/d3.min.js"></script>
+<link href="{{< blogdown/postref >}}index.en_files/d3.slider.js/d3.slider.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index.en_files/d3.slider.js/d3.slider.js"></script>
+<link href="{{< blogdown/postref >}}index.en_files/ndtv-d3/css/styles.css" rel="stylesheet" />
+<script src="{{< blogdown/postref >}}index.en_files/ndtv-d3/js/ndtv-d3.js"></script>
+<script src="{{< blogdown/postref >}}index.en_files/ndtvAnimationWidget-binding/ndtvAnimationWidget.js"></script>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction:</h2>
+<div class="line-block">  There are many formal and informal events or meetings that often are the location of social interactions. Understanding how these connection can build upon social networks can help us understand the flow of ideas and resources through a community. These networks are dynamic and grow and change over time. Here is one way that I have been able to show the importance of time in the growth of a social network based on attendance to mutual meetings.</div>
+</div>
+<div id="data-structure" class="section level2">
+<h2>Data Structure:</h2>
+<div class="line-block">  It is possible to view attendance data as a bipartite network, the attendees as one node type and the meetings or events as the other. Therefore our matrix looks something like this.</div>
+<pre class="r"><code>library(dplyr, warn.conflicts = F, quietly = T)
+library(tibble, warn.conflicts = F, quietly = T)
+library(knitr, warn.conflicts = F, quietly = T)
+library(tidyr,warn.conflicts = F, quietly = T)
+a &lt;- tibble(&quot;name&quot; = c(&quot;person_1&quot;,&quot;person_2&quot;,&quot;person_3&quot;,&quot;person_4&quot;,&quot;person_5&quot;),
+            &quot;10/12/20&quot; = c(0,1,1,1,0),
+            &quot;10/19/20&quot; = c(1,1,0,0,1),
+            &quot;10/26/20&quot; = c(0,0,0,1,1),
+            &quot;11/3/20&quot; = c(1,1,1,1,0)) %&gt;%
+  column_to_rownames(&quot;name&quot;)
+
+kable(a)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">10/12/20</th>
+<th align="right">10/19/20</th>
+<th align="right">10/26/20</th>
+<th align="right">11/3/20</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">person_1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">person_2</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">person_3</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">person_4</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">person_5</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">  This incidence matrix represents the potential meetings and exchanges between the attendees. We can also add characteristics to each node by creating a node list with a column for each attribute.</div>
+<pre class="r"><code>nl &lt;- tibble(&quot;name&quot; = c(rownames(a),colnames(a)),
+             &quot;type&quot; = c(&quot;student&quot;,&quot;professional&quot;,&quot;student&quot;,&quot;student&quot;,&quot;professional&quot;,&quot;meeting&quot;,&quot;meeting&quot;,&quot;meeting&quot;,&quot;meeting&quot;),
+             &quot;topic&quot; = c(NA,NA,NA,NA,NA,&quot;society&quot;,&quot;ecology&quot;,&quot;social-ecology&quot;,&quot;ecology&quot;))
+kable(nl)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+<th align="left">type</th>
+<th align="left">topic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">person_1</td>
+<td align="left">student</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">person_2</td>
+<td align="left">professional</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">person_3</td>
+<td align="left">student</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">person_4</td>
+<td align="left">student</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">person_5</td>
+<td align="left">professional</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="left">10/12/20</td>
+<td align="left">meeting</td>
+<td align="left">society</td>
+</tr>
+<tr class="odd">
+<td align="left">10/19/20</td>
+<td align="left">meeting</td>
+<td align="left">ecology</td>
+</tr>
+<tr class="even">
+<td align="left">10/26/20</td>
+<td align="left">meeting</td>
+<td align="left">social-ecology</td>
+</tr>
+<tr class="odd">
+<td align="left">11/3/20</td>
+<td align="left">meeting</td>
+<td align="left">ecology</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">  We can also get some basic summary statistics at this point. Also we will make attribute columns to later be added to our final vertex table before putting it into <a href="https://rdrr.io/cran/networkDynamic/">networkDynamic</a>.</div>
+<pre class="r"><code>nl$attn&lt;- c(rowSums(a),colSums(a))
+nl$color &lt;- ifelse(nl$type == &quot;meeting&quot;,&quot;tomato&quot;,&quot;black&quot;)
+nl$size &lt;- ifelse(nl$type == &quot;meeting&quot;,2,1)
+nl$shape &lt;- ifelse(nl$type == &quot;meeting&quot;,4,50)
+kable(nl)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+<th align="left">type</th>
+<th align="left">topic</th>
+<th align="right">attn</th>
+<th align="left">color</th>
+<th align="right">size</th>
+<th align="right">shape</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">person_1</td>
+<td align="left">student</td>
+<td align="left">NA</td>
+<td align="right">2</td>
+<td align="left">black</td>
+<td align="right">1</td>
+<td align="right">50</td>
+</tr>
+<tr class="even">
+<td align="left">person_2</td>
+<td align="left">professional</td>
+<td align="left">NA</td>
+<td align="right">3</td>
+<td align="left">black</td>
+<td align="right">1</td>
+<td align="right">50</td>
+</tr>
+<tr class="odd">
+<td align="left">person_3</td>
+<td align="left">student</td>
+<td align="left">NA</td>
+<td align="right">2</td>
+<td align="left">black</td>
+<td align="right">1</td>
+<td align="right">50</td>
+</tr>
+<tr class="even">
+<td align="left">person_4</td>
+<td align="left">student</td>
+<td align="left">NA</td>
+<td align="right">3</td>
+<td align="left">black</td>
+<td align="right">1</td>
+<td align="right">50</td>
+</tr>
+<tr class="odd">
+<td align="left">person_5</td>
+<td align="left">professional</td>
+<td align="left">NA</td>
+<td align="right">2</td>
+<td align="left">black</td>
+<td align="right">1</td>
+<td align="right">50</td>
+</tr>
+<tr class="even">
+<td align="left">10/12/20</td>
+<td align="left">meeting</td>
+<td align="left">society</td>
+<td align="right">3</td>
+<td align="left">tomato</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">10/19/20</td>
+<td align="left">meeting</td>
+<td align="left">ecology</td>
+<td align="right">3</td>
+<td align="left">tomato</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">10/26/20</td>
+<td align="left">meeting</td>
+<td align="left">social-ecology</td>
+<td align="right">2</td>
+<td align="left">tomato</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">11/3/20</td>
+<td align="left">meeting</td>
+<td align="left">ecology</td>
+<td align="right">4</td>
+<td align="left">tomato</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="creating-the-static-network" class="section level2">
+<h2>Creating the Static Network:</h2>
+<div class="line-block">  At this point we can use the <a href="https://igraph.org/r/">iGraph</a> to create a graph object and apply the attributes. We will then use this as our base network to build our dynamic network using <a href="http://statnet.org/">statnet</a>, particularly the <a href="https://rdrr.io/cran/networkDynamic/">networkDynamic</a> package.</div>
+<pre class="r"><code>library(igraph,warn.conflicts = F,quietly = T)
+g &lt;- graph_from_incidence_matrix(a)
+
+g &lt;- igraph::set.vertex.attribute(g,&quot;type2&quot;,value = nl$type)
+g &lt;- igraph::set.vertex.attribute(g,&quot;topic&quot;,value = nl$topic)
+g &lt;- igraph::set.vertex.attribute(g, &quot;attn&quot;,value = nl$attn)
+
+plot(g,
+     vertex.size = 10,
+     vertex.color = ifelse(V(g)$type == F,&quot;black&quot;,&quot;red&quot;),
+     vertex.label.dist = 3,
+     vertex.frame.color = NA)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="adding-dynamic-network-onset-and-terminus" class="section level2">
+<h2>Adding Dynamic Network Onset and Terminus:</h2>
+<div class="line-block">  Going from the static network to the dynamic network means we need to tell the plotter when the different edges and nodes will be added to the graph. We do this by including an “onset” and “terminus” attribute. For the events, they will be revealed in sequence. The attendees will be added with the first meeting that they attend. The edges will appear connecting each attendee to a meeting, even if they have already been to a meeting.<br />
+  networkDynamic takes a specific format of edge list called edge.spells with the columns, onset, terminus, tail.name, head.name, onset/terminus.censored, duration and edge.id. Later we will replace the vertex.id in a head.name and tail.name column after creating the vertex.spells.</div>
+<pre class="r"><code>es &lt;- as.data.frame(as_incidence_matrix(g))
+
+es &lt;- es %&gt;%
+  rownames_to_column(var = &quot;tail.name&quot;) %&gt;%
+  pivot_longer(cols = colnames(a)) %&gt;%
+  filter(value != 0) %&gt;%
+  rename(head.name = name) 
+
+es &lt;- es %&gt;%
+  mutate(onset = match(es$head.name,colnames(a)))
+
+es &lt;- mutate(es,&quot;terminus&quot; = ncol(as_incidence_matrix(g))+1,
+             &quot;edge.id&quot; = as.numeric(1:nrow(es))) %&gt;%
+  select(onset,terminus,tail.name,head.name,edge.id) %&gt;%
+  data.frame()
+
+kable(es)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">onset</th>
+<th align="right">terminus</th>
+<th align="left">tail.name</th>
+<th align="left">head.name</th>
+<th align="right">edge.id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="left">person_1</td>
+<td align="left">10/19/20</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="left">person_1</td>
+<td align="left">11/3/20</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="left">person_2</td>
+<td align="left">10/12/20</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="left">person_2</td>
+<td align="left">10/19/20</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="left">person_2</td>
+<td align="left">11/3/20</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="left">person_3</td>
+<td align="left">10/12/20</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="left">person_3</td>
+<td align="left">11/3/20</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="left">person_4</td>
+<td align="left">10/12/20</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="left">person_4</td>
+<td align="left">10/26/20</td>
+<td align="right">9</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="left">person_4</td>
+<td align="left">11/3/20</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="left">person_5</td>
+<td align="left">10/19/20</td>
+<td align="right">11</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="left">person_5</td>
+<td align="left">10/26/20</td>
+<td align="right">12</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">  The vertex.spells table is similar and for this situation can be constructed directly from the edge.spells.</div>
+<pre class="r"><code>vs &lt;- es %&gt;%
+  pivot_longer(cols = c(tail.name,head.name)) %&gt;%
+  rename(&quot;vertex.name&quot; = value) %&gt;%
+  arrange(vertex.name) %&gt;%
+  select(onset,terminus,vertex.name) %&gt;%
+  group_by(vertex.name) %&gt;%
+  summarise(
+    &quot;onset&quot; = min(onset),
+    &quot;terminus&quot; = max(terminus)
+  ) %&gt;%
+  mutate(
+    &quot;vertex.id&quot; = as.numeric(1:nrow(nl))
+  )
+
+kable(vs)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">vertex.name</th>
+<th align="right">onset</th>
+<th align="right">terminus</th>
+<th align="right">vertex.id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">10/12/20</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">10/19/20</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="left">10/26/20</td>
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">11/3/20</td>
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">person_1</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="left">person_2</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="left">person_3</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">person_4</td>
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">person_5</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">9</td>
+</tr>
+</tbody>
+</table>
+<div class="line-block">  Now the vertex.id columns for the head and tail of the edges.</div>
+<pre class="r"><code>es &lt;- es %&gt;%
+  mutate(tail = vs$vertex.id[match(es$tail.name,vs$vertex.name)],
+         head = vs$vertex.id[match(es$head.name,vs$vertex.name)]) %&gt;%
+  select(onset,terminus,tail,head,edge.id) %&gt;%
+  data.frame()
+
+kable(es)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">onset</th>
+<th align="right">terminus</th>
+<th align="right">tail</th>
+<th align="right">head</th>
+<th align="right">edge.id</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">5</td>
+<td align="right">2</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">5</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="right">1</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="right">2</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="right">4</td>
+<td align="right">5</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">7</td>
+<td align="right">1</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">7</td>
+<td align="right">4</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">8</td>
+<td align="right">1</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="right">9</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">8</td>
+<td align="right">4</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">9</td>
+<td align="right">2</td>
+<td align="right">11</td>
+</tr>
+<tr class="even">
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="right">9</td>
+<td align="right">3</td>
+<td align="right">12</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="adding-dynamic-atrributes-or-teas" class="section level2">
+<h2>Adding Dynamic Atrributes or TEAs:</h2>
+<div class="line-block">  Now that we have the basic structure of the network ready to go into networkDynamic, we can add some attributes. In order to pass the attribute columns into networkDynamic we need to create TEA columns from the node list we made earlier. These columns will go at the end of our edge and vertex spells tables.</div>
+<pre class="r"><code>vs &lt;- vs %&gt;%
+  mutate(
+    &quot;vertex.cex&quot; = nl$size[match(vs$vertex.name,nl$name)],
+    &quot;vertex.col&quot; = nl$color[match(vs$vertex.name,nl$name)],
+    &quot;vertex.sides&quot; = nl$shape[match(vs$vertex.name,nl$name)]
+  ) %&gt;%
+  select(onset,terminus,vertex.id,
+         vertex.name,vertex.col,vertex.sides,vertex.cex) %&gt;%
+  data.frame()
+
+kable(vs)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">onset</th>
+<th align="right">terminus</th>
+<th align="right">vertex.id</th>
+<th align="left">vertex.name</th>
+<th align="left">vertex.col</th>
+<th align="right">vertex.sides</th>
+<th align="right">vertex.cex</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">1</td>
+<td align="left">10/12/20</td>
+<td align="left">tomato</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">2</td>
+<td align="left">10/19/20</td>
+<td align="left">tomato</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="right">3</td>
+<td align="left">10/26/20</td>
+<td align="left">tomato</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">4</td>
+<td align="left">11/3/20</td>
+<td align="left">tomato</td>
+<td align="right">4</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">5</td>
+<td align="left">person_1</td>
+<td align="left">black</td>
+<td align="right">50</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">6</td>
+<td align="left">person_2</td>
+<td align="left">black</td>
+<td align="right">50</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">7</td>
+<td align="left">person_3</td>
+<td align="left">black</td>
+<td align="right">50</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">1</td>
+<td align="right">5</td>
+<td align="right">8</td>
+<td align="left">person_4</td>
+<td align="left">black</td>
+<td align="right">50</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">9</td>
+<td align="left">person_5</td>
+<td align="left">black</td>
+<td align="right">50</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="rendering-the-dynamic-network" class="section level2">
+<h2>Rendering the Dynamic Network:</h2>
+<div class="line-block">  We will now load the statnet package. The edge.spells and vertex.spells are then put into networkDynamic. Also, notice the creation of the TEAs.</div>
+<pre class="r"><code>library(statnet, warn.conflicts = F, quietly = T,verbose = F)
+netdyn &lt;- networkDynamic(base.net = , 
+                         edge.spells = es, 
+                         vertex.spells = vs,
+                         create.TEAs = T,
+                         vertex.TEA.names = c(&quot;vertex.name&quot;,
+                                              &quot;vertex.col&quot;,
+                                              &quot;vertex.sides&quot;,
+                                              &quot;vertex.cex&quot;),
+                         net.obs.period = list(observations=list(c(0,4)),
+                      mode=&quot;continuous&quot;, time.increment=NA,time.unit=&quot;unit&quot;))</code></pre>
+<pre><code>## Initializing base.net of size 9 imputed from maximum vertex id in edge records
+## Activated TEA vertex attributes:  vertex.name, vertex.col, vertex.sides, vertex.cexActivated TEA edge attributes:  edge.idCreated net.obs.period to describe network
+##  Network observation period info:
+##   Number of observation spells: 1 
+##   Maximal time range observed: 0 until 4 
+##   Temporal mode: continuous 
+##   Time unit: unit 
+##   Suggested time increment: NA</code></pre>
+<div class="line-block">  networkDynamic produces for us a network dynamic object, which we then will compute the animation for with compute.animation which is part of the ndtv package. We can adjust the layout here. This may take a moment depending on the size of the network.</div>
+<pre class="r"><code>library(ndtv, warn.conflicts = F, quietly = T)
+slice.par &lt;- list(start = 1, end = 4, interval = 1,
+                  aggregate.dur = 1, rule = &quot;any&quot;)
+
+compute.animation(netdyn,
+                  animation.mode = &#39;kamadakawai&#39;,
+                  slice.par = slice.par,
+                  verbose = T)</code></pre>
+<div class="line-block">  Lastly, we use ndtv to create a htmlwidget, or we can use render.animation and saveVideo to output a .mp4.</div>
+<pre class="r"><code>library(htmlwidgets)
+render.par &lt;- list(tween.frames = 10, show.time = FALSE)
+plot.par &lt;- list(mar = c(0, 0, 0, 0))
+
+render.d3movie(netdyn, output.mode = &quot;htmlWidget&quot;,
+               vertex.col=&quot;vertex.col&quot;,
+               vertex.cex=&quot;vertex.cex&quot;,
+               vertex.sides = &quot;vertex.sides&quot;,
+               label = &quot;vertex.name&quot;,
+                           label.pos = 0,
+                           label.cex = 1,
+               displaylabels = T)</code></pre>
+<div id="htmlwidget-1" style="width:672px;height:480px;" class="ndtvAnimationWidget html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"graphData":{"render":[{"start":[1],"end":[2],"data":{"active":{"nodes":{"1":[0],"6":[1],"7":[2],"8":[3]},"edges":{"1":[0],"2":[1],"3":[2]}},"coord":[[-0.170091756033948,-0.123825540392478],[0.864962804693467,-0.259645061234879],[-0.358501949310017,0.925999804004899],[-0.864962804693467,-0.925999804004899]],"vertex.col":["rgba(255,99,71,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)"],"vertex.cex":[2,1,1,1],"vertex.sides":[4,50,50,50],"label":["10/12/20","person_2","person_3","person_4"],"label.pos":[0],"label.cex":[1],"displaylabels":[true],"bg":["rgba(255,255,255,1)"],"xlab":["t=1-2"],"jitter":[false],"xlim":[-1.87169497043421,1.87169497043421],"ylim":[-1.82432043299449,1.82432043299449]}},{"start":[2],"end":[3],"data":{"active":{"nodes":{"1":[0],"2":[1],"5":[2],"6":[3],"7":[4],"8":[5],"9":[6]},"edges":{"1":[0],"2":[1],"3":[2],"4":[3],"5":[4],"6":[5]}},"coord":[[0.792672339676628,-0.744675337556802],[-0.79045075638779,0.734935457056666],[-0.691097925287403,1.82432043299449],[0.0223175783051275,0.0211811129723922],[1.87169497043421,-0.518452384347805],[0.674367297481232,-1.82432043299449],[-1.87169497043421,0.568348131313212]],"vertex.col":["rgba(255,99,71,1)","rgba(255,99,71,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)"],"vertex.cex":[2,2,1,1,1,1,1],"vertex.sides":[4,4,50,50,50,50,50],"label":["10/12/20","10/19/20","person_1","person_2","person_3","person_4","person_5"],"label.pos":[0],"label.cex":[1],"displaylabels":[true],"bg":["rgba(255,255,255,1)"],"xlab":["t=2-3"],"jitter":[false],"xlim":[-1.87169497043421,1.87169497043421],"ylim":[-1.82432043299449,1.82432043299449]}},{"start":[3],"end":[4],"data":{"active":{"nodes":{"1":[0],"2":[1],"3":[2],"5":[3],"6":[4],"7":[5],"8":[6],"9":[7]},"edges":{"1":[0],"2":[1],"3":[2],"4":[3],"5":[4],"6":[5],"7":[6],"8":[7]}},"coord":[[0.201784204280051,-0.748392100193572],[-0.543302950668693,1.15199218558415],[1.39017587347579,0.812163262863311],[-1.39017587347579,1.81543012177413],[-0.639570246809436,0.0184627480299213],[0.0920344347272766,-1.81543012177413],[1.25791479368824,-0.302579728686377],[0.534661037048273,1.53861242325667]],"vertex.col":["rgba(255,99,71,1)","rgba(255,99,71,1)","rgba(255,99,71,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)"],"vertex.cex":[2,2,2,1,1,1,1,1],"vertex.sides":[4,4,4,50,50,50,50,50],"label":["10/12/20","10/19/20","10/26/20","person_1","person_2","person_3","person_4","person_5"],"label.pos":[0],"label.cex":[1],"displaylabels":[true],"bg":["rgba(255,255,255,1)"],"xlab":["t=3-4"],"jitter":[false],"xlim":[-1.87169497043421,1.87169497043421],"ylim":[-1.82432043299449,1.82432043299449]}},{"start":[4],"end":[5],"data":{"active":{"nodes":{"1":[0],"2":[1],"3":[2],"4":[3],"5":[4],"6":[5],"7":[6],"8":[7],"9":[8]},"edges":{"1":[0],"2":[1],"3":[2],"4":[3],"5":[4],"6":[5],"7":[6],"8":[7],"9":[8],"10":[9],"11":[10],"12":[11]}},"coord":[[0.339294552496644,-1.08261340510501],[-0.467753656861343,1.15026160224417],[1.30251023932211,0.702020545399387],[-0.614894741427417,-0.543969886984308],[-1.30251023932211,0.424882843014553],[-0.14782968474649,0.0853165469468957],[-0.603389757838295,-1.60545397785101],[0.778520864870269,-0.320997362203251],[0.575368945124106,1.60545397785101]],"vertex.col":["rgba(255,99,71,1)","rgba(255,99,71,1)","rgba(255,99,71,1)","rgba(255,99,71,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)","rgba(0,0,0,1)"],"vertex.cex":[2,2,2,2,1,1,1,1,1],"vertex.sides":[4,4,4,4,50,50,50,50,50],"label":["10/12/20","10/19/20","10/26/20","11/3/20","person_1","person_2","person_3","person_4","person_5"],"label.pos":[0],"label.cex":[1],"displaylabels":[true],"bg":["rgba(255,255,255,1)"],"xlab":["t=4-5"],"jitter":[false],"xlim":[-1.87169497043421,1.87169497043421],"ylim":[-1.82432043299449,1.82432043299449]}}],"network":{"mel":[{"inl":[1],"outl":[6],"atl":{"na":[false],"active":[[1,5]],"edge.id.active":[[[3]],[[1,5]]]}},{"inl":[1],"outl":[7],"atl":{"na":[false],"active":[[1,5]],"edge.id.active":[[[6]],[[1,5]]]}},{"inl":[1],"outl":[8],"atl":{"na":[false],"active":[[1,5]],"edge.id.active":[[[8]],[[1,5]]]}},{"inl":[2],"outl":[5],"atl":{"na":[false],"active":[[2,5]],"edge.id.active":[[[1]],[[2,5]]]}},{"inl":[2],"outl":[6],"atl":{"na":[false],"active":[[2,5]],"edge.id.active":[[[4]],[[2,5]]]}},{"inl":[2],"outl":[9],"atl":{"na":[false],"active":[[2,5]],"edge.id.active":[[[11]],[[2,5]]]}},{"inl":[3],"outl":[8],"atl":{"na":[false],"active":[[3,5]],"edge.id.active":[[[9]],[[3,5]]]}},{"inl":[3],"outl":[9],"atl":{"na":[false],"active":[[3,5]],"edge.id.active":[[[12]],[[3,5]]]}},{"inl":[4],"outl":[5],"atl":{"na":[false],"active":[[4,5]],"edge.id.active":[[[2]],[[4,5]]]}},{"inl":[4],"outl":[6],"atl":{"na":[false],"active":[[4,5]],"edge.id.active":[[[5]],[[4,5]]]}},{"inl":[4],"outl":[7],"atl":{"na":[false],"active":[[4,5]],"edge.id.active":[[[7]],[[4,5]]]}},{"inl":[4],"outl":[8],"atl":{"na":[false],"active":[[4,5]],"edge.id.active":[[[10]],[[4,5]]]}}],"gal":{"n":[9],"mnext":[13],"directed":[true],"hyper":[false],"loops":[false],"multiple":[false],"bipartite":[false],"net.obs.period":{"observations":[[0,4]],"mode":["continuous"],"time.increment":[null],"time.unit":["unit"]},"slice.par":{"start":[1],"end":[4],"interval":[1],"aggregate.dur":[1],"rule":["any"]}},"val":[{"na":[false],"vertex.names":[1],"active":[[1,5]],"vertex.name.active":[[["10/12/20"]],[[1,5]]],"vertex.col.active":[[["tomato"]],[[1,5]]],"vertex.sides.active":[[[4]],[[1,5]]],"vertex.cex.active":[[[2]],[[1,5]]]},{"na":[false],"vertex.names":[2],"active":[[2,5]],"vertex.name.active":[[["10/19/20"]],[[2,5]]],"vertex.col.active":[[["tomato"]],[[2,5]]],"vertex.sides.active":[[[4]],[[2,5]]],"vertex.cex.active":[[[2]],[[2,5]]]},{"na":[false],"vertex.names":[3],"active":[[3,5]],"vertex.name.active":[[["10/26/20"]],[[3,5]]],"vertex.col.active":[[["tomato"]],[[3,5]]],"vertex.sides.active":[[[4]],[[3,5]]],"vertex.cex.active":[[[2]],[[3,5]]]},{"na":[false],"vertex.names":[4],"active":[[4,5]],"vertex.name.active":[[["11/3/20"]],[[4,5]]],"vertex.col.active":[[["tomato"]],[[4,5]]],"vertex.sides.active":[[[4]],[[4,5]]],"vertex.cex.active":[[[2]],[[4,5]]]},{"na":[false],"vertex.names":[5],"active":[[2,5]],"vertex.name.active":[[["person_1"]],[[2,5]]],"vertex.col.active":[[["black"]],[[2,5]]],"vertex.sides.active":[[[50]],[[2,5]]],"vertex.cex.active":[[[1]],[[2,5]]]},{"na":[false],"vertex.names":[6],"active":[[1,5]],"vertex.name.active":[[["person_2"]],[[1,5]]],"vertex.col.active":[[["black"]],[[1,5]]],"vertex.sides.active":[[[50]],[[1,5]]],"vertex.cex.active":[[[1]],[[1,5]]]},{"na":[false],"vertex.names":[7],"active":[[1,5]],"vertex.name.active":[[["person_3"]],[[1,5]]],"vertex.col.active":[[["black"]],[[1,5]]],"vertex.sides.active":[[[50]],[[1,5]]],"vertex.cex.active":[[[1]],[[1,5]]]},{"na":[false],"vertex.names":[8],"active":[[1,5]],"vertex.name.active":[[["person_4"]],[[1,5]]],"vertex.col.active":[[["black"]],[[1,5]]],"vertex.sides.active":[[[50]],[[1,5]]],"vertex.cex.active":[[[1]],[[1,5]]]},{"na":[false],"vertex.names":[9],"active":[[2,5]],"vertex.name.active":[[["person_5"]],[[2,5]]],"vertex.col.active":[[["black"]],[[2,5]]],"vertex.sides.active":[[[50]],[[2,5]]],"vertex.cex.active":[[[1]],[[2,5]]]}],"iel":[[3,2,1],[6,5,4],[8,7],[12,11,10,9],[],[],[],[],[]],"oel":[[],[],[],[],[4,9],[1,5,10],[2,11],[3,7,12],[6,8]]}},"animationOptions":{"ndtv.version":"0.13.1,2021-07-29"}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="references" class="section level2">
+<h2>References:</h2>
+<p>Bender-deMoll, Skye (2013). ndtv: Network Dynamic Temporal Visualizations. R package version 0.6.1, <a href="http://CRAN.R-project.org/package=ndtv" class="uri">http://CRAN.R-project.org/package=ndtv</a>.</p>
+<p>Butts CT (2008). “network: A Package for Managing Relational Data in R”. Journal of Statistical Software, 24(2). <a href="http://www.jstatsoft.org/v24/i02/" class="uri">http://www.jstatsoft.org/v24/i02/</a>.</p>
+<p>Butts C, Leslie-Cook A, Krivitsky P and Bender-deMoll S (2012). networkDynamic: Dynamic Extensions for Network Objects. R package version 0.8, <a href="http://statnet.org" class="uri">http://statnet.org</a>.</p>
+<p>Michalec, G.. Bender-deMoll, S., Morris, M. (2014) ‘ndtv-d3: an HTML5 network animation player for the ndtv package’ The statnet project. <a href="https://github.com/statnet/ndtv-d3" class="uri">https://github.com/statnet/ndtv-d3</a></p>
+<p>Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686, <a href="https://doi.org/10.21105/joss.01686" class="uri">https://doi.org/10.21105/joss.01686</a></p>
+</div>

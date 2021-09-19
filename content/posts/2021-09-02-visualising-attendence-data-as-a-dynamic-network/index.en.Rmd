@@ -1,0 +1,221 @@
+---
+title: Visualising Attendence Data as a Dynamic Network
+author: R package build
+date: '2021-09-02'
+slug: visualising-attendence-data-as-a-dynamic-network
+categories:
+  - Network Visualization
+tags:
+  - Dynamic Networks
+  - R
+  - Write-up
+---
+
+## Introduction: 
+
+|   There are many formal and informal events or meetings that often are the location of social interactions. Understanding how these connection can build upon social networks can help us understand the flow of ideas and resources through a community. These networks are dynamic and grow and change over time. Here is one way that I have been able to show the importance of time in the growth of a social network based on attendance to mutual meetings. 
+
+## Data Structure:
+
+|   It is possible to view attendance data as a bipartite network, the attendees as one node type and the meetings or events as the other. Therefore our matrix looks something like this. 
+
+```{r}
+library(dplyr, warn.conflicts = F, quietly = T)
+library(tibble, warn.conflicts = F, quietly = T)
+library(knitr, warn.conflicts = F, quietly = T)
+library(tidyr,warn.conflicts = F, quietly = T)
+a <- tibble("name" = c("person_1","person_2","person_3","person_4","person_5"),
+            "10/12/20" = c(0,1,1,1,0),
+            "10/19/20" = c(1,1,0,0,1),
+            "10/26/20" = c(0,0,0,1,1),
+            "11/3/20" = c(1,1,1,1,0)) %>%
+  column_to_rownames("name")
+
+kable(a)
+```
+
+
+|   This incidence matrix represents the potential meetings and exchanges between the attendees. We can also add characteristics to each node by creating a node list with a column for each attribute. 
+
+```{r}
+nl <- tibble("name" = c(rownames(a),colnames(a)),
+             "type" = c("student","professional","student","student","professional","meeting","meeting","meeting","meeting"),
+             "topic" = c(NA,NA,NA,NA,NA,"society","ecology","social-ecology","ecology"))
+kable(nl)
+```
+
+|   We can also get some basic summary statistics at this point. Also we will make attribute columns to later be added to our final vertex table before putting it into [networkDynamic](https://rdrr.io/cran/networkDynamic/). 
+
+```{r}
+nl$attn<- c(rowSums(a),colSums(a))
+nl$color <- ifelse(nl$type == "meeting","tomato","black")
+nl$size <- ifelse(nl$type == "meeting",2,1)
+nl$shape <- ifelse(nl$type == "meeting",4,50)
+kable(nl)
+```
+
+## Creating the Static Network:
+
+|   At this point we can use the [iGraph](https://igraph.org/r/) to create a graph object and apply the attributes. We will then use this as our base network to build our dynamic network using [statnet](http://statnet.org/), particularly the [networkDynamic](https://rdrr.io/cran/networkDynamic/) package. 
+
+```{r}
+library(igraph,warn.conflicts = F,quietly = T)
+g <- graph_from_incidence_matrix(a)
+
+g <- igraph::set.vertex.attribute(g,"type2",value = nl$type)
+g <- igraph::set.vertex.attribute(g,"topic",value = nl$topic)
+g <- igraph::set.vertex.attribute(g, "attn",value = nl$attn)
+
+plot(g,
+     vertex.size = 10,
+     vertex.color = ifelse(V(g)$type == F,"black","red"),
+     vertex.label.dist = 3,
+     vertex.frame.color = NA)
+```
+
+## Adding Dynamic Network Onset and Terminus:
+
+|   Going from the static network to the dynamic network means we need to tell the plotter when the different edges and nodes will be added to the graph. We do this by including an "onset" and "terminus" attribute. For the events, they will be revealed in sequence. The attendees will be added with the first meeting that they attend. The edges will appear connecting each attendee to a meeting, even if they have already been to a meeting.  
+  
+|   networkDynamic takes a specific format of edge list called edge.spells with the columns, onset, terminus, tail.name, head.name, onset/terminus.censored, duration and edge.id. Later we will replace the vertex.id in a head.name and tail.name column after creating the vertex.spells.
+
+
+```{r}
+es <- as.data.frame(as_incidence_matrix(g))
+
+es <- es %>%
+  rownames_to_column(var = "tail.name") %>%
+  pivot_longer(cols = colnames(a)) %>%
+  filter(value != 0) %>%
+  rename(head.name = name) 
+
+es <- es %>%
+  mutate(onset = match(es$head.name,colnames(a)))
+
+es <- mutate(es,"terminus" = ncol(as_incidence_matrix(g))+1,
+             "edge.id" = as.numeric(1:nrow(es))) %>%
+  select(onset,terminus,tail.name,head.name,edge.id) %>%
+  data.frame()
+
+kable(es)
+```
+
+|   The vertex.spells table is similar and for this situation can be constructed directly from the edge.spells.
+
+```{r}
+vs <- es %>%
+  pivot_longer(cols = c(tail.name,head.name)) %>%
+  rename("vertex.name" = value) %>%
+  arrange(vertex.name) %>%
+  select(onset,terminus,vertex.name) %>%
+  group_by(vertex.name) %>%
+  summarise(
+    "onset" = min(onset),
+    "terminus" = max(terminus)
+  ) %>%
+  mutate(
+    "vertex.id" = as.numeric(1:nrow(nl))
+  )
+
+kable(vs)
+```
+
+|   Now the vertex.id columns for the head and tail of the edges.
+
+```{r}
+es <- es %>%
+  mutate(tail = vs$vertex.id[match(es$tail.name,vs$vertex.name)],
+         head = vs$vertex.id[match(es$head.name,vs$vertex.name)]) %>%
+  select(onset,terminus,tail,head,edge.id) %>%
+  data.frame()
+
+kable(es)
+```
+
+## Adding Dynamic Atrributes or TEAs:
+
+|   Now that we have the basic structure of the network ready to go into networkDynamic, we can add some attributes. In order to pass the attribute columns into networkDynamic we need to create TEA columns from the node list we made earlier. These columns will go at the end of our edge and vertex spells tables. 
+
+```{r}
+vs <- vs %>%
+  mutate(
+    "vertex.cex" = nl$size[match(vs$vertex.name,nl$name)],
+    "vertex.col" = nl$color[match(vs$vertex.name,nl$name)],
+    "vertex.sides" = nl$shape[match(vs$vertex.name,nl$name)]
+  ) %>%
+  select(onset,terminus,vertex.id,
+         vertex.name,vertex.col,vertex.sides,vertex.cex) %>%
+  data.frame()
+
+kable(vs)
+```
+
+## Rendering the Dynamic Network:
+
+|   We will now load the statnet package. The edge.spells and vertex.spells are then put into networkDynamic. Also, notice the creation of the TEAs. 
+
+```{r message=FALSE, warning=FALSE}
+library(statnet, warn.conflicts = F, quietly = T,verbose = F)
+netdyn <- networkDynamic(base.net = , 
+                         edge.spells = es, 
+                         vertex.spells = vs,
+                         create.TEAs = T,
+                         vertex.TEA.names = c("vertex.name",
+                                              "vertex.col",
+                                              "vertex.sides",
+                                              "vertex.cex"),
+                         net.obs.period = list(observations=list(c(0,4)),
+                      mode="continuous", time.increment=NA,time.unit="unit"))
+```
+
+|   networkDynamic produces for us a network dynamic object, which we then will compute the animation for with compute.animation which is part of the ndtv package. We can adjust the layout here. This may take a moment depending on the size of the network. 
+
+```{r message=FALSE, warning=FALSE}
+library(ndtv, warn.conflicts = F, quietly = T)
+slice.par <- list(start = 1, end = 4, interval = 1,
+                  aggregate.dur = 1, rule = "any")
+
+compute.animation(netdyn,
+                  animation.mode = 'kamadakawai',
+                  slice.par = slice.par,
+                  verbose = T)
+```
+
+|   Lastly, we use ndtv to create a htmlwidget, or we can use render.animation and saveVideo to output a .mp4. 
+
+```{r message=FALSE, warning=FALSE}
+library(htmlwidgets)
+render.par <- list(tween.frames = 10, show.time = FALSE)
+plot.par <- list(mar = c(0, 0, 0, 0))
+
+render.d3movie(netdyn, output.mode = "htmlWidget",
+               vertex.col="vertex.col",
+               vertex.cex="vertex.cex",
+               vertex.sides = "vertex.sides",
+               label = "vertex.name",
+                           label.pos = 0,
+                           label.cex = 1,
+               displaylabels = T)
+
+```
+
+
+
+
+
+
+
+## References:
+
+Bender-deMoll, Skye (2013). ndtv: Network Dynamic Temporal Visualizations. R package version 0.6.1, http://CRAN.R-project.org/package=ndtv.
+
+Butts CT (2008). “network: A Package for Managing Relational Data in R”. Journal of Statistical Software, 24(2). http://www.jstatsoft.org/v24/i02/.
+
+Butts C, Leslie-Cook A, Krivitsky P and Bender-deMoll S (2012). networkDynamic: Dynamic Extensions for Network Objects. R package version 0.8, http://statnet.org.
+
+Michalec, G.. Bender-deMoll, S., Morris, M. (2014) ‘ndtv-d3: an HTML5 network animation player for the ndtv package’ The statnet project. https://github.com/statnet/ndtv-d3
+
+Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+
+
+
