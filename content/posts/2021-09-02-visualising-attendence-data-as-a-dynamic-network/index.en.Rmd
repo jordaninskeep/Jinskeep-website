@@ -58,7 +58,7 @@ kable(nl)
 
 |   At this point we can use the [iGraph](https://igraph.org/r/) to create a graph object and apply the attributes. We will then use this as our base network to build our dynamic network using [statnet](http://statnet.org/), particularly the [networkDynamic](https://rdrr.io/cran/networkDynamic/) package. 
 
-```{r plot}
+```{r plot, dev='jpeg'}
 library(igraph,warn.conflicts = F,quietly = T)
 g <- graph_from_incidence_matrix(a)
 
