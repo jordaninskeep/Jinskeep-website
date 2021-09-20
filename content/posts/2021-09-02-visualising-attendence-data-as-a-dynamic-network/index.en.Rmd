@@ -193,7 +193,6 @@ render.d3movie(netdyn, output.mode = "inline",
                vertex.cex="vertex.cex",
                vertex.sides = "vertex.sides",
                label = "vertex.name",
-                           label.pos = 0,
                            label.cex = 1,
                displaylabels = T)
 
