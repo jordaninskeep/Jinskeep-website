@@ -183,12 +183,12 @@ compute.animation(netdyn,
 
 |   Lastly, we use ndtv to create a htmlwidget, or we can use render.animation and saveVideo to output a .mp4. 
 
-```{r message=FALSE, warning=FALSE}
+```{r ndtv, message=FALSE, warning=FALSE, results='asis'}
 library(htmlwidgets)
 render.par <- list(tween.frames = 10, show.time = FALSE)
 plot.par <- list(mar = c(0, 0, 0, 0))
 
-render.d3movie(netdyn, output.mode = "htmlWidget",
+render.d3movie(netdyn, output.mode = "inline",
                vertex.col="vertex.col",
                vertex.cex="vertex.cex",
                vertex.sides = "vertex.sides",
