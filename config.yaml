@@ -23,6 +23,9 @@ markup:
     endLevel: 3
     ordered: false
     startLevel: 2
+  goldmark:
+    renderer:
+      unsafe: true
 
 # Social links in footer, support github,twitter,stackoverflow,facebook
 social:
