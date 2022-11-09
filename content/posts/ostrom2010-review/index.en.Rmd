@@ -33,19 +33,28 @@ Self-organization is in this context often a discussion around the development o
 
 She goes on to explain the development of the types of goods typology, which uses two dimensions along subtractability and excludability to produce four types, of goods. It could be important to spend more time discussing the implications of scarcity and induced demand on this typology. In general though, private goods could be common-pool resources if we didn’t exclude them through commodification. All private goods could be distributed through libraries or other sharing systems.
 
-![ALT TEXT: A Typology of Ostrom's Four Goods: The left axis is high and low difficulty in excludability and the top axis is subractability high and low. High difficulty in excludability and high subtractability is "common pool resouces: groundwater basin, lakes, irrigation systems, fisheries, forests, etc. High difficulty in excludability and low subrtacability is "Public goods: peace and security, national defense, knowledge, fire protection, weather forecasts, etc." Low difficulty in excludability and high subtracability are "Private goods: food, clothing, automobiles, etc." Low difficulty in excludability and low subractability are "Toll goods: theatres, private clubs, daycare centers."](images/OstromsFourGoods.PNG)
+```{r, fig.alt = "ALT TEXT: A Typology of Ostrom's Four Goods: The left axis is high and low difficulty in excludability and the top axis is subractability high and low. High difficulty in excludability and high subtractability is 'common pool resouces: groundwater basin, lakes, irrigation systems, fisheries, forests, etc.' High difficulty in excludability and low subrtacability is 'Public goods: peace and security, national defense, knowledge, fire protection, weather forecasts, etc.' Low difficulty in excludability and high subtracability are 'Private goods: food, clothing, automobiles, etc.' Low difficulty in excludability and low subractability are 'Toll goods: theatres, private clubs, daycare centers.'"}
+knitr::include_graphics("images/OstromsFourGoods.PNG")
+```
+
 
 The IAD framework is rooted in the idea of actions situations which are the locations which decisions are made and outcomes are determined. It is also effected by external variables. Outcomes are also feedback into these actions situations and external variables. This process is passive and active. Individuals can intentionally work towards outcomes which will effect external variables and action situations.
 
-![ALT TEXT: Label: Figure 2. A Framework for Institutional Analysis. A Diagram with four levels left to right, First: "External variables" which includes biophysical consitions, attributes of community, and rules in use, all connected, has an arrow going to "Action situation" and coming from "outcomes". Second: "Actions situation" has an arrow going to "Interactions", and coming from "Interactions", "Outcomes", and "External Variables." Third: "Interactions" and "Outcomes" in seperate boxes. "Interactions" has an arrow to "Outcomes" and an arrow from "Actions situation" and "Evaluative criteria." Forth: "Evaluative Criteria" has an arrow to "Interactions" and "Outcomes." "Outcomes" has a dotted line that feedbacks into "Action Situations" and "External variables."](images/OstromsIADFramework.PNG)
+```{r, fig.alt= "ALT TEXT: Label: Figure 2. A Framework for Institutional Analysis. A Diagram with four levels left to right, First: 'External variables' which includes biophysical consitions, attributes of community, and rules in use, all connected, has an arrow going to 'Action situation' and coming from 'outcomes'. Second: 'Actions situation' has an arrow going to 'Interactions', and coming from 'Interactions', 'Outcomes', and 'External Variables.' Third: 'Interactions' and 'Outcomes' in seperate boxes. 'Interactions' has an arrow to 'Outcomes' and an arrow from 'Actions situation' and 'Evaluative criteria.' Forth: 'Evaluative Criteria' has an arrow to 'Interactions' and 'Outcomes.' 'Outcomes' has a dotted line that feedbacks into 'Action Situations' and 'External variables.'"}
+knitr::include_graphics("images/OstromsIADFramework.PNG")
+
+```
+
 
 
 Internal to actions situations are variables which are determined by seven rules. Each rule can have any number of sub-types. For example in the lecture mentioned above Lin says that they had empirically found up to 80+ boundary rules that are in-use in the different governance systems.
   
   
-![ALT TEXT: Label: Figure 4. Rules as Exogenous Variables Directly Affecting the Elements of an Action Situation. A diagram with one box in the middle and a diagram inside with arrows connection elements. Inside the box the diagram  is arrows that make statements, Elements in all Caps. "ACTORS assigned to POSITIONS", "ACTIONS assigned to POSITIONS". "ACTORS, POSITIONS and ACTIONS linked to POTENTIAL OUTCOMES". linked to in previous statement as two arrows pointing to it. "INFORMATION about" and "CONTROL over". "NET COSTS AND BENEFITS assigned to POTENTIAL OUTCOMES". Outside the box there are rules that effect the elements inside the box shown by arrows. Boundary rules affect ACTORS. Postion rules affect POSITIONS. Choice rules affect ACTIONS. Information rules affect INFORMATION. Aggregation rules affect CONTROL. Scope Rules affect POTENTIAL OUTCOMES. Payoff rules affect NET COSTS AND BENEFITS.](images/OstromsActionSituation.PNG)
-  
-  
+```{r, fig.alt= "ALT TEXT: Label: Figure 4. Rules as Exogenous Variables Directly Affecting the Elements of an Action Situation. A diagram with one box in the middle and a diagram inside with arrows connection elements. Inside the box the diagram  is arrows that make statements, Elements in all Caps. 'ACTORS assigned to POSITIONS', 'ACTIONS assigned to POSITIONS'. 'ACTORS, POSITIONS and ACTIONS linked to POTENTIAL OUTCOMES'. linked to in previous statement as two arrows pointing to it. 'INFORMATION about' and 'CONTROL over'. 'NET COSTS AND BENEFITS assigned to POTENTIAL OUTCOMES'. Outside the box there are rules that effect the elements inside the box shown by arrows. Boundary rules affect ACTORS. Postion rules affect POSITIONS. Choice rules affect ACTIONS. Information rules affect INFORMATION. Aggregation rules affect CONTROL. Scope Rules affect POTENTIAL OUTCOMES. Payoff rules affect NET COSTS AND BENEFITS."}
+knitr::include_graphics("images/OstromsActionSituation.PNG")
+
+```
+ 
 
 ### Ostrom’s Design Principles
 
@@ -73,7 +82,12 @@ In address micro-situations, that is the moments and setting in which an individ
 
 In discussing broader contexts, she employs social-ecological systems (SES) theory, where she shows out actions situations are embedded within broader set of contextual variables. At the highest conceptual level these are, endogenously, the social, economic and political setting and related ecosystems, and endogenously, the resource system, the resource units, the governance system and the users. Each variable is then unpacked at lower levels. More on this on the review of Ostrom (2009).
 
-![ALT TEXT: Label: Figure 6. Action Situtation embedded in broader social-ecological systems. A diagram showing an box nested inside another. The innermost box says "Action Situation" and "Interactions (i) with and arrow to Outcomes (o)". With in the second box with arrows pointing to the first box and each other are "Resource System" and "Resource Units" on one side and then on the other also pointing to the first box and each other are "Governance system" and "Users". Dotted lines leave the inside box and point to each element in the second box. Outside the box are "Social, economic and political setting" on top with an arrow pointing both to the box and to itself, and on the bottom, "Related Ecosystems" which also has an arrow pointing to the box and from the box to it.](images/OstromsSocialEcologicalSystem.PNG)
+![](images/OstromsSocialEcologicalSystem.PNG)
+
+```{r, fig.alt="ALT TEXT: Label: Figure 6. Action Situtation embedded in broader social-ecological systems. A diagram showing an box nested inside another. The innermost box says 'Action Situation' and 'Interactions (i) with and arrow to Outcomes (o)'. With in the second box with arrows pointing to the first box and each other are 'Resource System' and 'Resource Units' on one side and then on the other also pointing to the first box and each other are 'Governance system' and 'Users'. Dotted lines leave the inside box and point to each element in the second box. Outside the box are 'Social, economic and political setting' on top with an arrow pointing both to the box and to itself, and on the bottom, 'Related Ecosystems' which also has an arrow pointing to the box and from the box to it."}
+knitr::include_graphics("images/OstromsSocialEcologicalSystem.PNG")
+```
+
 
 ### Moving Forward
 
