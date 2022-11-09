@@ -40,9 +40,11 @@ The IAD framework is rooted in the idea of actions situations which are the loca
 
 
 Internal to actions situations are variables which are determined by seven rules. Each rule can have any number of sub-types. For example in the lecture mentioned above Lin says that they had empirically found up to 80+ boundary rules that are in-use in the different governance systems.
-
+  
+  
 ![Label: Figure 4. Rules as Exogenous Variables Directly Affecting the Elements of an Action Situation. A diagram with one box in the middle and a diagram inside with arrows connection elements. Inside the box the diagram  is arrows that make statements, Elements in all Caps. "ACTORS assigned to POSITIONS", "ACTIONS assigned to POSITIONS". "ACTORS, POSITIONS and ACTIONS linked to POTENTIAL OUTCOMES". linked to in previous statement as two arrows pointing to it. "INFORMATION about" and "CONTROL over". "NET COSTS AND BENEFITS assigned to POTENTIAL OUTCOMES". Outside the box there are rules that effect the elements inside the box shown by arrows. Boundary rules affect ACTORS. Postion rules affect POSITIONS. Choice rules affect ACTIONS. Information rules affect INFORMATION. Aggregation rules affect CONTROL. Scope Rules affect POTENTIAL OUTCOMES. Payoff rules affect NET COSTS AND BENEFITS.](images/OstromsActionSituation.PNG)
-
+  
+  
 
 ### Ostrom’s Design Principles
 
