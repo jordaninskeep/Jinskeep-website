@@ -15,6 +15,7 @@ draft: no
 fig_caption: FALSE
 ---
 
+
 ## Ostrom, E. (2010). Beyond Markets and States: Polycentric Governance of Complex Economic Systems. *American Economic Review*, *100*(3), Article 3. [https://doi.org/10.1257/aer.100.3.641](https://doi.org/10.1257/aer.100.3.641)
 
 ### Intro
@@ -33,7 +34,7 @@ Self-organization is in this context often a discussion around the development o
 
 She goes on to explain the development of the types of goods typology, which uses two dimensions along subtractability and excludability to produce four types, of goods. It could be important to spend more time discussing the implications of scarcity and induced demand on this typology. In general though, private goods could be common-pool resources if we didn’t exclude them through commodification. All private goods could be distributed through libraries or other sharing systems.
 
-```{r, fig.alt = "ALT TEXT: A Typology of Ostrom's Four Goods: The left axis is high and low difficulty in excludability and the top axis is subractability high and low. High difficulty in excludability and high subtractability is 'common pool resouces: groundwater basin, lakes, irrigation systems, fisheries, forests, etc.' High difficulty in excludability and low subrtacability is 'Public goods: peace and security, national defense, knowledge, fire protection, weather forecasts, etc.' Low difficulty in excludability and high subtracability are 'Private goods: food, clothing, automobiles, etc.' Low difficulty in excludability and low subractability are 'Toll goods: theatres, private clubs, daycare centers.'"}
+```{r, fig.alt = "ALT TEXT: A Typology of Ostrom's Four Goods: The left axis is high and low difficulty in excludability and the top axis is subractability high and low. High difficulty in excludability and high subtractability is 'common pool resouces: groundwater basin, lakes, irrigation systems, fisheries, forests, etc.' High difficulty in excludability and low subrtacability is 'Public goods: peace and security, national defense, knowledge, fire protection, weather forecasts, etc.' Low difficulty in excludability and high subtracability are 'Private goods: food, clothing, automobiles, etc.' Low difficulty in excludability and low subractability are 'Toll goods: theatres, private clubs, daycare centers.'", echo=F, fig.width=100%}
 knitr::include_graphics("images/OstromsFourGoods.PNG")
 ```
 
