@@ -28,7 +28,7 @@ It is an attempt to solidify Institutional Analysis and Development Framework (I
 
 ### Self-Organization and Politics in IAD
 
-Self-organization is in this context often a discussion around the development of representative constitutional arrangements from the bottom-up [see @ostrom1961; trako2019]. For as forward thinking IAD was the limited empirically focused scope of the Ostrom’s work failed to test other more radical or fringe political arrangements. This could just as easily be applied to more directly democratic or anarchistic systems. In a lecture on Youtube ([https://youtu.be/LqC7xG8fxHw?t=461](https://youtu.be/LqC7xG8fxHw?t=461)) Lin discusses the growing use of her work to establish ‘community control’ as a panacea. She is careful to avoid a normative political position on markets, state control, or community control. In the video she states, “we have to understand under what conditions, and what attributes of those systems are the important variables.” My questions is what is important? and how do we understand what the different outcomes of “successful” state control, “successful” markets, and “successful” communities are? This is a inherently political questions, in each setting there will be winners and losers, environmental and social costs and benefits, and most importantly long lasting effects on human and human societies.
+Self-organization is in this context often a discussion around the development of representative constitutional arrangements from the bottom-up (see Ostrom, 1961; Trako, 2019). For as forward thinking IAD was the limited empirically focused scope of the Ostrom’s work failed to test other more radical or fringe political arrangements. This could just as easily be applied to more directly democratic or anarchistic systems. In a lecture on Youtube ([https://youtu.be/LqC7xG8fxHw?t=461](https://youtu.be/LqC7xG8fxHw?t=461)) Lin discusses the growing use of her work to establish ‘community control’ as a panacea. She is careful to avoid a normative political position on markets, state control, or community control. In the video she states, “we have to understand under what conditions, and what attributes of those systems are the important variables.” My questions is what is important? and how do we understand what the different outcomes of “successful” state control, “successful” markets, and “successful” communities are? This is a inherently political questions, in each setting there will be winners and losers, environmental and social costs and benefits, and most importantly long lasting effects on human and human societies.
 
 ### IAD Framework
 
@@ -117,6 +117,10 @@ Moyson, S., Scholten, P., & Weible, C. M. (2017). Policy learning and policy cha
 Ostrom, E. (2005). Understanding institutional diversity. Princeton University Press.
 
 Ostrom, E. (2009). A General Framework for Analyzing Sustainability of Social-Ecological Systems. Science, 325(5939), Article 5939. https://doi.org/10.1126/science.1172133
+
+Ostrom, V., Tiebout, C. M., & Warren, R. (1961). The Organization of Government in Metropolitan Areas: A Theoretical Inquiry. American Political Science Review, 55(4), 831–842. https://doi.org/10.2307/1952530
+
+Tarko, V., Schlager, E., & Lutter, M. (2019). The Faustian Bargain: Power-Sharing, Constitutions, and the Practice of Polycentricity in Governance. In A. Thiel, W. A. Blomquist, & D. E. Garrick (Eds.), Governing Complexity (1st ed., pp. 219–236). Cambridge University Press. https://doi.org/10.1017/9781108325721.011
 
 Wengrow, D., & Graeber, D. (2015). Farewell to the ‘childhood of man’: Ritual, seasonality, and the origins of inequality: Farewell to the ‘childhood of man.’ Journal of the Royal Anthropological Institute, 21(3), 597–619. https://doi.org/10.1111/1467-9655.12247
 
